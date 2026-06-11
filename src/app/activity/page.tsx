@@ -2,16 +2,16 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import Navbar from "@/components/Navbar";
-import Dashboard from "@/components/Dashboard";
+import ActivityFeed from "@/components/ActivityFeed";
 
-export default async function HomePage() {
+export default async function ActivityPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
   return (
     <>
       <Navbar />
-      <Dashboard />
+      <ActivityFeed />
     </>
   );
 }
