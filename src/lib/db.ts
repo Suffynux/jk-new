@@ -21,6 +21,13 @@ export async function dbConnect() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri, { dbName: "jk-news" });
   }
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    // A failed connection must not stay cached, or every later
+    // request keeps rethrowing the old error
+    cached.promise = null;
+    throw err;
+  }
   return cached.conn;
 }
