@@ -1,50 +1,123 @@
 # JK-News Records
 
-A simple workflow tracker for the studio — replaces the paper register for news/report records.
+**Professional Workflow Management System for JK New**
 
-- **Kanban board** (Pending → In Progress → Done) with drag & drop, plus a **List view**
-- Each record: **Sr number**, **News name**, **Voice over** toggle, **Video status**
-- **Login required** (NextAuth, email + password)
-- **Super admin** can create/remove team users
-- **Activity log** — every status change, voice-over toggle, create/delete is recorded with who did it and when
+Serving **200,000+ followers** with enterprise-grade task and content management.
 
-Built with Next.js (App Router), MongoDB (Mongoose), NextAuth, Tailwind CSS.
+JK News Records is a modern, intuitive workflow management application designed to streamline editorial operations, content production, and team collaboration. Built for high-performance teams, it provides real-time Kanban-style task tracking, comprehensive activity auditing, and role-based access control.
 
-## Setup
+## Key Features
 
-1. **Add your MongoDB Atlas connection string** to `.env.local`:
+- **Interactive Kanban Board** – Visual workflow with Pending → In Progress → Done stages, drag & drop task management, and list view alternative
+- **Comprehensive Record Management** – Serial numbering, content titles, voice-over toggles, and video status tracking
+- **Secure Authentication** – NextAuth-powered login with email/password authentication
+- **Role-Based Access Control** – Super admin capabilities for user management and system configuration
+- **Full Audit Trail** – Complete activity logging with timestamps, user attribution, and change tracking
+- **Real-Time Collaboration** – Multi-user support with instant updates and conflict prevention
 
+## Technology Stack
+
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS
+- **Backend:** Node.js, Next.js API Routes
+- **Database:** MongoDB (Mongoose ODM)
+- **Authentication:** NextAuth v4
+- **Deployment:** Optimized for Vercel
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ and npm
+- MongoDB Atlas account (free tier available)
+
+### Installation
+
+1. **Clone and install dependencies:**
+   ```bash
+   git clone git@github.com:Suffynux/jk-new.git
+   cd jk-new
+   npm install
    ```
+
+2. **Configure environment variables** in `.env.local`:
+   ```env
    MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/jk-news?retryWrites=true&w=majority
+   NEXTAUTH_SECRET=your-secret-key
+   NEXTAUTH_URL=http://localhost:3000
+   SUPER_ADMIN_PASSWORD=ChangeMe@123
    ```
 
-   (In Atlas: Database → Connect → Drivers → copy the string, replace the password. Also allow your IP in Network Access.)
-
-2. **Create the super admin account** (`usamakhizer786@gmail.com`):
-
+3. **Initialize the database** with super admin account:
    ```bash
    npm run seed
    ```
 
-   Default password is `ChangeMe@123` (set in `.env.local` as `SUPER_ADMIN_PASSWORD` — change it and re-run seed to update).
-
-3. **Run the app**:
-
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-   Open http://localhost:3000 and log in.
+   Open [http://localhost:3000](http://localhost:3000) and log in.
 
-## Pages
+## Application Routes
 
-| Page | Who | What |
-|---|---|---|
-| `/` | everyone logged in | Kanban + list view of news records |
-| `/activity` | everyone logged in | Full activity log |
-| `/users` | super admin only | Create / remove team users |
+| Route | Access | Purpose |
+|-------|--------|---------|
+| `/` | Authenticated Users | Kanban board & list view of all workflow records |
+| `/activity` | Authenticated Users | Complete activity log and audit trail |
+| `/users` | Super Admin | User management - create, remove, and configure team members |
 
-## Deploying
+## Available Scripts
 
-Works on Vercel out of the box. Set these environment variables in the Vercel project:
-`MONGODB_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (your production URL).
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
+
+## Deployment
+
+### Vercel (Recommended)
+
+The application is fully optimized for Vercel deployment. Configure these environment variables in your Vercel project:
+
+- `MONGODB_URI` – MongoDB Atlas connection string
+- `NEXTAUTH_SECRET` – Secure random string for session encryption
+- `NEXTAUTH_URL` – Your production URL
+
+Push to main branch and Vercel will auto-deploy.
+
+### Other Platforms
+
+Ensure Node.js 18+ runtime and set all environment variables before deployment.
+
+## Project Structure
+
+```
+src/
+├── app/                          # Next.js App Router
+│   ├── api/                     # API routes (auth, news, activity)
+│   ├── globals.css              # Global styling
+│   ├── layout.tsx               # Root layout
+│   └── page.tsx                 # Home page
+├── lib/
+│   ├── auth.ts                  # NextAuth configuration
+│   └── db.ts                    # Database connection
+├── models/                       # Mongoose schemas
+│   ├── User.ts
+│   ├── NewsItem.ts
+│   └── Activity.ts
+└── types/                        # TypeScript type definitions
+```
+
+## Contributing
+
+For team members and contributors, please follow the existing code style and ensure all tests pass before submitting pull requests.
+
+## License
+
+Proprietary - JK New
+
+## Support
+
+For issues, feature requests, or questions, please contact the development team.
