@@ -1,37 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JK-News Records
 
-## Getting Started
+A simple workflow tracker for the studio — replaces the paper register for news/report records.
 
-First, run the development server:
+- **Kanban board** (Pending → In Progress → Done) with drag & drop, plus a **List view**
+- Each record: **Sr number**, **News name**, **Voice over** toggle, **Video status**
+- **Login required** (NextAuth, email + password)
+- **Super admin** can create/remove team users
+- **Activity log** — every status change, voice-over toggle, create/delete is recorded with who did it and when
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Built with Next.js (App Router), MongoDB (Mongoose), NextAuth, Tailwind CSS.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Add your MongoDB Atlas connection string** to `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```
+   MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/jk-news?retryWrites=true&w=majority
+   ```
 
-## Learn More
+   (In Atlas: Database → Connect → Drivers → copy the string, replace the password. Also allow your IP in Network Access.)
 
-To learn more about Next.js, take a look at the following resources:
+2. **Create the super admin account** (`usamakhizer786@gmail.com`):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm run seed
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   Default password is `ChangeMe@123` (set in `.env.local` as `SUPER_ADMIN_PASSWORD` — change it and re-run seed to update).
 
-## Deploy on Vercel
+3. **Run the app**:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# jk-new
+   Open http://localhost:3000 and log in.
+
+## Pages
+
+| Page | Who | What |
+|---|---|---|
+| `/` | everyone logged in | Kanban + list view of news records |
+| `/activity` | everyone logged in | Full activity log |
+| `/users` | super admin only | Create / remove team users |
+
+## Deploying
+
+Works on Vercel out of the box. Set these environment variables in the Vercel project:
+`MONGODB_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (your production URL).
