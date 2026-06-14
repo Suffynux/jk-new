@@ -415,7 +415,7 @@ export default function Dashboard() {
                       <td colSpan={colSpan} className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                            📅 {group.label}
+                            {group.label || "Unknown date"}
                           </span>
                           <span className="rounded-full bg-slate-700/40 px-2 py-0.5 text-xs font-semibold text-slate-400">
                             {group.items.length}
