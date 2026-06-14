@@ -14,6 +14,31 @@ export async function GET() {
   return NextResponse.json(items);
 }
 
+// Delete every news record — super admin only.
+export async function DELETE() {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "superadmin") {
+    return NextResponse.json({ error: "Only the super admin can delete all news" }, { status: 403 });
+  }
+
+  await dbConnect();
+  const { deletedCount } = await NewsItem.deleteMany({});
+
+  try {
+    await Activity.create({
+      userEmail: session.user.email,
+      userName: session.user.name,
+      action: "deleted",
+      detail: `Cleared the board — deleted all ${deletedCount} news record${deletedCount === 1 ? "" : "s"}`,
+    });
+  } catch (err) {
+    console.error("Failed to write activity log", err);
+  }
+
+  return NextResponse.json({ ok: true, deletedCount });
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

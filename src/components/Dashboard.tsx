@@ -137,6 +137,19 @@ export default function Dashboard() {
     }
   }
 
+  async function deleteAll() {
+    if (!items.length) return;
+    if (!confirm(`Delete ALL ${items.length} news records? This cannot be undone.`)) return;
+    if (!confirm("Are you absolutely sure? Every record on the board will be permanently removed.")) return;
+    const res = await fetch("/api/news", { method: "DELETE" });
+    if (res.ok) {
+      setItems([]);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Failed to delete all");
+    }
+  }
+
   async function deleteItem(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
@@ -242,6 +255,16 @@ export default function Dashboard() {
           >
             + Add News
           </button>
+          {isSuperAdmin && items.length > 0 && (
+            <button
+              onClick={deleteAll}
+              title="Delete all news records"
+              className="rounded-lg border border-red-500/50 px-3 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500/10"
+            >
+              <span className="hidden sm:inline">Delete all</span>
+              <span className="sm:hidden">🗑</span>
+            </button>
+          )}
         </div>
       </div>
 
