@@ -10,6 +10,9 @@ const NewsItemSchema = new Schema(
     voiceOver: { type: Boolean, default: false },
     status: { type: String, enum: NEWS_STATUSES, default: "pending" },
     createdBy: { type: String, required: true },
+    newStartedAt: { type: Date },
+    newsCompletedAt: { type: Date },
+    progress: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
