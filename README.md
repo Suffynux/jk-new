@@ -23,6 +23,11 @@ JK News Records is a modern, intuitive workflow management application designed 
 - **Authentication:** NextAuth v4
 - **Deployment:** Optimized for Vercel
 
+## Resources & Channel
+
+- **JK News Official Channel** – [Facebook Reels & Updates](https://www.facebook.com/jknewstvofficial/reels/)
+  - Serving 200,000+ followers with breaking news, analysis, and exclusive content
+
 ## Quick Start
 
 ### Prerequisites
