@@ -19,6 +19,14 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
+
+  // start time and end time should be start when the news is created and completed when the news is marked as done. This will help us to calculate the time taken to complete the news.
+
+  const newStartedAt = body.status === "done" ? new Date() : undefined;
+  const newsCompletedAt = body.status === "done" ? new Date() : undefined;
+
+  
+
   const title = (body.title ?? "").trim();
   if (!title) return NextResponse.json({ error: "News name is required" }, { status: 400 });
 
