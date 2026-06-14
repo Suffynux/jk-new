@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 
 type Status = "in-progress" | "voice-over" | "video-editing" | "onair" | "done";
@@ -28,10 +28,36 @@ const COLUMNS = [
 ] as const;
 
 const ORDER = COLUMNS.map((c) => c.key) as Status[];
+const OVERDUE_MS = 60 * 60 * 1000; // 1 hour
 
-function progressForStatus(status: Status): number {
-  const idx = ORDER.indexOf(status);
+/** Map any value (incl. legacy "pending") to a valid stage so nothing breaks. */
+function normalizeStatus(status: string): Status {
+  return ORDER.includes(status as Status) ? (status as Status) : "in-progress";
+}
+
+function progressForStatus(status: string): number {
+  const idx = ORDER.indexOf(normalizeStatus(status));
   return idx < 0 ? 0 : Math.round(((idx + 1) / ORDER.length) * 100);
+}
+
+/** A news item is overdue when it isn't Done and has been open for over an hour. */
+function isOverdue(item: NewsItem, now: number): boolean {
+  if (normalizeStatus(item.status) === "done") return false;
+  const start = new Date(item.startedAt ?? item.createdAt).getTime();
+  return now - start > OVERDUE_MS;
+}
+
+/** Stable key (for sorting/grouping) and a human label for an item's day. */
+function dayKey(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10); // YYYY-MM-DD
+}
+function dayLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function formatDuration(ms: number): string {
@@ -64,6 +90,10 @@ export default function Dashboard() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Status | null>(null);
   const [now, setNow] = useState(() => Date.now());
+
+  // Filters
+  const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState<"all" | Status>("all");
 
   // Add form state
   const [newTitle, setNewTitle] = useState("");
@@ -148,7 +178,33 @@ export default function Dashboard() {
   }
 
   const nextSr = items.length ? Math.max(...items.map((i) => i.srNumber)) + 1 : 1;
-  const doneCount = items.filter((i) => i.status === "done").length;
+  const doneCount = items.filter((i) => normalizeStatus(i.status) === "done").length;
+
+  // Search + stage filter, applied to both views.
+  const visibleItems = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((it) => {
+      if (stageFilter !== "all" && normalizeStatus(it.status) !== stageFilter) return false;
+      if (!q) return true;
+      return it.title.toLowerCase().includes(q) || String(it.srNumber).includes(q);
+    });
+  }, [items, query, stageFilter]);
+
+  // List view: group by creation day, newest day first.
+  const groupedByDay = useMemo(() => {
+    const map = new Map<string, { label: string; items: NewsItem[] }>();
+    for (const it of visibleItems) {
+      const key = dayKey(it.createdAt);
+      if (!map.has(key)) map.set(key, { label: dayLabel(it.createdAt), items: [] });
+      map.get(key)!.items.push(it);
+    }
+    return [...map.entries()]
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([key, g]) => ({ key, ...g }));
+  }, [visibleItems]);
+
+  const overdueCount = visibleItems.filter((i) => isOverdue(i, now)).length;
+  const colSpan = isSuperAdmin ? 7 : 6;
 
   return (
     <main className="mx-auto max-w-7xl px-3 py-5 sm:px-4 sm:py-6">
@@ -158,6 +214,9 @@ export default function Dashboard() {
           <h1 className="text-lg font-bold sm:text-xl">News Board</h1>
           <p className="text-sm text-slate-500">
             {items.length} records · {doneCount} done
+            {overdueCount > 0 && (
+              <span className="font-semibold text-red-500"> · {overdueCount} overdue</span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -186,6 +245,37 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Search + stage filter */}
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">⌕</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by news name or Sr #…"
+            className="w-full rounded-lg border border-slate-300 bg-slate-900 py-2 pl-8 pr-3 text-sm outline-none focus:border-brand dark:border-slate-800"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-300"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <select
+          value={stageFilter}
+          onChange={(e) => setStageFilter(e.target.value as "all" | Status)}
+          className="rounded-lg border border-slate-300 bg-slate-900 px-3 py-2 text-sm font-medium outline-none focus:border-brand dark:border-slate-800"
+        >
+          <option value="all">All stages</option>
+          {COLUMNS.map((c) => (
+            <option key={c.key} value={c.key}>{c.label}</option>
+          ))}
+        </select>
+      </div>
+
       {error && (
         <div className="mb-4 flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-500">
           {error}
@@ -199,7 +289,7 @@ export default function Dashboard() {
         /* ───────────── Kanban view — swipeable on mobile, 5-col grid on desktop ───────────── */
         <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-5 md:gap-3 md:overflow-visible">
           {COLUMNS.map((col) => {
-            const colItems = items.filter((it) => it.status === col.key);
+            const colItems = visibleItems.filter((it) => normalizeStatus(it.status) === col.key);
             return (
               <div
                 key={col.key}
@@ -224,9 +314,11 @@ export default function Dashboard() {
                       draggable
                       onDragStart={() => setDragId(item._id)}
                       onDragEnd={() => setDragId(null)}
-                      className={`group rounded-lg border border-slate-200 bg-slate-900 p-3 shadow-sm transition hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-600 md:cursor-grab md:active:cursor-grabbing ${
-                        dragId === item._id ? "opacity-40" : ""
-                      }`}
+                      className={`group rounded-lg border bg-slate-900 p-3 shadow-sm transition md:cursor-grab md:active:cursor-grabbing ${
+                        isOverdue(item, now)
+                          ? "border-red-500/60 bg-red-500/5"
+                          : "border-slate-200 hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-600"
+                      } ${dragId === item._id ? "opacity-40" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-xs font-bold text-slate-500">#{item.srNumber}</span>
@@ -269,7 +361,7 @@ export default function Dashboard() {
           })}
         </div>
       ) : (
-        /* ───────────── List view ───────────── */
+        /* ───────────── List view — grouped by day ───────────── */
         <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-500">
@@ -284,45 +376,85 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {items.map((item) => (
-                <tr key={item._id} className="bg-slate-950 transition hover:bg-slate-900/50">
-                  <td className="px-3 py-3 font-bold text-slate-500">#{item.srNumber}</td>
-                  <td className="px-3 py-3 font-medium">{item.title}</td>
-                  <td className="px-3 py-3">
-                    <select
-                      value={item.status}
-                      onChange={(e) => patchItem(item._id, { status: e.target.value })}
-                      className="rounded-lg border border-slate-300 bg-slate-900 px-2 py-1 text-xs font-semibold outline-none dark:border-slate-700"
-                    >
-                      {COLUMNS.map((c) => (
-                        <option key={c.key} value={c.key}>{c.label}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-3 py-3 hidden sm:table-cell">
-                    <div className="flex items-center gap-2">
-                      <ProgressBar value={item.progress || progressForStatus(item.status)} bar="bg-brand" compact />
-                      <span className="text-xs text-slate-500">{item.progress || progressForStatus(item.status)}%</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3 text-slate-500">⏱ {elapsed(item, now)}</td>
-                  <td className="px-3 py-3 text-slate-500 hidden md:table-cell">{item.createdBy}</td>
-                  {isSuperAdmin && (
-                    <td className="px-3 py-3 text-right">
-                      <button
-                        onClick={() => deleteItem(item._id, item.title)}
-                        className="text-xs text-slate-500 transition hover:text-red-500"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {items.length === 0 && (
+              {groupedByDay.map((group) => {
+                const dayOverdue = group.items.filter((i) => isOverdue(i, now)).length;
+                return (
+                  <Fragment key={group.key}>
+                    <tr className="bg-slate-900/80">
+                      <td colSpan={colSpan} className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                            📅 {group.label}
+                          </span>
+                          <span className="rounded-full bg-slate-700/40 px-2 py-0.5 text-xs font-semibold text-slate-400">
+                            {group.items.length}
+                          </span>
+                          {dayOverdue > 0 && (
+                            <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-semibold text-red-500">
+                              {dayOverdue} overdue
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {group.items.map((item) => {
+                      const overdue = isOverdue(item, now);
+                      return (
+                        <tr
+                          key={item._id}
+                          className={`transition ${
+                            overdue
+                              ? "border-l-4 border-l-red-500 bg-red-500/10 hover:bg-red-500/15"
+                              : "bg-slate-950 hover:bg-slate-900/50"
+                          }`}
+                        >
+                          <td className={`px-3 py-3 font-bold ${overdue ? "text-red-500" : "text-slate-500"}`}>
+                            #{item.srNumber}
+                          </td>
+                          <td className="px-3 py-3 font-medium">{item.title}</td>
+                          <td className="px-3 py-3">
+                            <select
+                              value={normalizeStatus(item.status)}
+                              onChange={(e) => patchItem(item._id, { status: e.target.value })}
+                              className="rounded-lg border border-slate-300 bg-slate-900 px-2 py-1 text-xs font-semibold outline-none dark:border-slate-700"
+                            >
+                              {COLUMNS.map((c) => (
+                                <option key={c.key} value={c.key}>{c.label}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-3 py-3 hidden sm:table-cell">
+                            <div className="flex items-center gap-2">
+                              <ProgressBar value={item.progress || progressForStatus(item.status)} bar="bg-brand" compact />
+                              <span className="text-xs text-slate-500">{item.progress || progressForStatus(item.status)}%</span>
+                            </div>
+                          </td>
+                          <td className={`px-3 py-3 ${overdue ? "font-semibold text-red-500" : "text-slate-500"}`}>
+                            ⏱ {elapsed(item, now)}
+                          </td>
+                          <td className="px-3 py-3 text-slate-500 hidden md:table-cell">{item.createdBy}</td>
+                          {isSuperAdmin && (
+                            <td className="px-3 py-3 text-right">
+                              <button
+                                onClick={() => deleteItem(item._id, item.title)}
+                                className="text-xs text-slate-500 transition hover:text-red-500"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                );
+              })}
+              {groupedByDay.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-slate-600">
-                    No news records yet. Tap “+ Add News” to create your first one.
+                  <td colSpan={colSpan} className="px-4 py-10 text-center text-slate-600">
+                    {items.length === 0
+                      ? "No news records yet. Tap “+ Add News” to create your first one."
+                      : "No news match your search."}
                   </td>
                 </tr>
               )}
