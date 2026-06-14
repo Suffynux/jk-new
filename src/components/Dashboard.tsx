@@ -22,7 +22,7 @@ type NewsItem = {
 const COLUMNS = [
   { key: "in-progress", label: "In Progress", accent: "border-t-sky-500", badge: "bg-sky-500/15 text-sky-500", bar: "bg-sky-500" },
   { key: "voice-over", label: "Voice Over", accent: "border-t-violet-500", badge: "bg-violet-500/15 text-violet-500", bar: "bg-violet-500" },
-  { key: "video-editing", label: "Video / Editing", accent: "border-t-amber-500", badge: "bg-amber-500/15 text-amber-500", bar: "bg-amber-500" },
+  { key: "video-editing", label: "Editing", accent: "border-t-amber-500", badge: "bg-amber-500/15 text-amber-500", bar: "bg-amber-500" },
   { key: "onair", label: "On Air", accent: "border-t-rose-500", badge: "bg-rose-500/15 text-rose-500", bar: "bg-rose-500" },
   { key: "done", label: "Done", accent: "border-t-emerald-500", badge: "bg-emerald-500/15 text-emerald-500", bar: "bg-emerald-500" },
 ] as const;

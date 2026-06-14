@@ -13,7 +13,7 @@ export type NewsStatus = (typeof NEWS_STATUSES)[number];
 export const STATUS_LABELS: Record<NewsStatus, string> = {
   "in-progress": "In Progress",
   "voice-over": "Voice Over",
-  "video-editing": "Video / Editing",
+  "video-editing": "Editing",
   onair: "On Air",
   done: "Done",
 };
