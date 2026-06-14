@@ -279,12 +279,16 @@ export default function Dashboard() {
     setListPage(1);
   }, [query, stageFilter]);
 
-  function handleDailyReport() {
-    const result = exportDailyReport(items);
-    if (result.count === 0) {
-      toast("No news completed today yet.", { icon: "📭" });
-    } else {
-      toast.success(`Exported daily report (${result.count} completed)`);
+  async function handleDailyReport() {
+    try {
+      const result = await exportDailyReport(items);
+      if (result.count === 0) {
+        toast("No news completed today yet — exported an empty report.", { icon: "📭" });
+      } else {
+        toast.success(`Exported daily report (${result.count} completed)`);
+      }
+    } catch {
+      toast.error("Failed to generate report");
     }
   }
 

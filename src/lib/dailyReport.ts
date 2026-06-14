@@ -1,6 +1,3 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-
 type ReportItem = {
   srNumber: number;
   title: string;
@@ -42,7 +39,12 @@ function time(iso?: string): string {
  * Builds and downloads a PDF of the news completed today.
  * Returns how many completed items were included.
  */
-export function exportDailyReport(items: ReportItem[]): { count: number } {
+export async function exportDailyReport(items: ReportItem[]): Promise<{ count: number }> {
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+
   const today = new Date();
   const completedToday = items
     .filter((i) => i.status === "done" && isSameDay(i.completedAt, today))
