@@ -102,6 +102,23 @@ export default function Dashboard() {
   const [newSr, setNewSr] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Confirmation modal
+  const [confirmState, setConfirmState] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  async function runConfirm() {
+    if (!confirmState) return;
+    setConfirming(true);
+    await confirmState.onConfirm();
+    setConfirming(false);
+    setConfirmState(null);
+  }
+
   const load = useCallback(async () => {
     const res = await fetch("/api/news");
     if (res.ok) setItems(await res.json());
@@ -142,10 +159,17 @@ export default function Dashboard() {
     }
   }
 
-  async function deleteAll() {
+  function deleteAll() {
     if (!items.length) return;
-    if (!confirm(`Delete ALL ${items.length} news records? This cannot be undone.`)) return;
-    if (!confirm("Are you absolutely sure? Every record on the board will be permanently removed.")) return;
+    setConfirmState({
+      title: "Delete all news",
+      message: `This will permanently delete all ${items.length} news record${items.length === 1 ? "" : "s"} on the board. This cannot be undone.`,
+      confirmLabel: "Delete all",
+      onConfirm: performDeleteAll,
+    });
+  }
+
+  async function performDeleteAll() {
     const res = await fetch("/api/news", { method: "DELETE" });
     if (res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -157,8 +181,16 @@ export default function Dashboard() {
     load(); // refresh from the server
   }
 
-  async function deleteItem(id: string, title: string) {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  function deleteItem(id: string, title: string) {
+    setConfirmState({
+      title: "Delete news",
+      message: `Delete “${title}”? This cannot be undone.`,
+      confirmLabel: "Delete",
+      onConfirm: () => performDeleteItem(id, title),
+    });
+  }
+
+  async function performDeleteItem(id: string, title: string) {
     const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
     if (res.ok) {
       toast.success(`Deleted "${title}"`);
