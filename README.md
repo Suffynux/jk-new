@@ -1,32 +1,52 @@
-# JK-News Records
+<p align="center">
+  <img src="public/jk_news_logo_component_rectangular.png" alt="JK News" width="120" />
+</p>
 
-**Professional Workflow Management System for JK New**
+<h1 align="center">JK News Records</h1>
 
-Serving **200,000+ followers** with enterprise-grade task and content management.
+<p align="center"><b>The production workflow tracker built especially for JK News.</b></p>
 
-JK News Records is a modern, intuitive workflow management application designed to streamline editorial operations, content production, and team collaboration. Built for high-performance teams, it provides real-time Kanban-style task tracking, comprehensive activity auditing, and role-based access control.
+## About this project
+
+I built **JK News Records** specifically for **[JK News](https://www.facebook.com/jknewstvofficial/reels/)** to manage their day-to-day news production — tracking every story from the moment work begins until it goes on air and is finished.
+
+JK News is a Jammu & Kashmir news channel serving **200,000+ followers** on Facebook with breaking news, reels, analysis, and exclusive coverage. Their team needed a simple, mobile-first way to see what each report is doing right now, who is working on it, and how long it takes to get a story to air. This app is that tool: a real-time Kanban board, stage-by-stage progress, and built-in timing — designed first for phones, because that is where the team actually works.
+
+> 🔗 **JK News on Facebook:** https://www.facebook.com/jknewstvofficial/reels/
 
 ## Key Features
 
-- **Interactive Kanban Board** – Visual workflow with Pending → In Progress → Done stages, drag & drop task management, and list view alternative
-- **Comprehensive Record Management** – Serial numbering, content titles, voice-over toggles, and video status tracking
-- **Secure Authentication** – NextAuth-powered login with email/password authentication
-- **Role-Based Access Control** – Super admin capabilities for user management and system configuration
-- **Full Audit Trail** – Complete activity logging with timestamps, user attribution, and change tracking
-- **Real-Time Collaboration** – Multi-user support with instant updates and conflict prevention
+- **5-stage production pipeline** – A Kanban board that follows a story through its real lifecycle: **In Progress → Voice Over → Video / Editing → On Air → Done**, with drag & drop on desktop and swipeable columns on mobile.
+- **Automatic time tracking** – A timer starts the moment a news item is created (In Progress) and stops when it is marked **Done**. The total turnaround time is calculated and stored, and live elapsed time is shown on every card until it is finished.
+- **Per-item progress** – Each news card shows a progress bar and percentage derived from its current stage, so you can see at a glance how far along every story is.
+- **Light & dark themes** – A white/light theme by default with a one-tap dark mode toggle in the navbar. Your choice is remembered and applied before the page paints (no flash).
+- **Mobile-first, responsive design** – The whole board is built to be used on phones first, then scales up to tablet and desktop.
+- **Brand identity** – Colors and logo taken straight from the JK News brand.
+- **Secure authentication** – NextAuth-powered email/password login.
+- **Role-based access control** – Super admin capabilities for user management.
+- **Full audit trail** – Every change (status moves, completions, edits) is logged with the user and a timestamp.
+
+## Workflow & timing
+
+Each news item moves through five stages. Progress is derived from the stage:
+
+| Stage | Progress |
+|-------|----------|
+| In Progress | 20% |
+| Voice Over | 40% |
+| Video / Editing | 60% |
+| On Air | 80% |
+| Done | 100% |
+
+The **clock starts** when an item is created (it enters *In Progress*) and **stops** when it reaches *Done*. The elapsed turnaround is saved on the record (`startedAt`, `completedAt`, `durationMs`) and surfaced both live on the board and in the activity log.
 
 ## Technology Stack
 
-- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4
 - **Backend:** Node.js, Next.js API Routes
 - **Database:** MongoDB (Mongoose ODM)
 - **Authentication:** NextAuth v4
 - **Deployment:** Optimized for Vercel
-
-## Resources & Channel
-
-- **JK News Official Channel** – [Facebook Reels & Updates](https://www.facebook.com/jknewstvofficial/reels/)
-  - Serving 200,000+ followers with breaking news, analysis, and exclusive content
 
 ## Quick Start
 
