@@ -245,10 +245,10 @@ export default function Dashboard() {
                       </div>
                       <p className="mt-1 text-sm font-medium leading-snug">{item.title}</p>
 
-                      <ProgressBar value={item.progress ?? progressForStatus(item.status)} bar={col.bar} />
+                      <ProgressBar value={item.progress || progressForStatus(item.status)} bar={col.bar} />
 
                       <div className="mt-2.5 flex items-center justify-between">
-                        <span className="text-xs text-slate-500">{item.progress ?? progressForStatus(item.status)}%</span>
+                        <span className="text-xs text-slate-500">{item.progress || progressForStatus(item.status)}%</span>
                         <div className="flex gap-1">
                           {prevStatus(col.key) && (
                             <MoveBtn label="←" title="Move back" onClick={() => patchItem(item._id, { status: prevStatus(col.key) })} />
@@ -301,8 +301,8 @@ export default function Dashboard() {
                   </td>
                   <td className="px-3 py-3 hidden sm:table-cell">
                     <div className="flex items-center gap-2">
-                      <ProgressBar value={item.progress ?? progressForStatus(item.status)} bar="bg-brand" compact />
-                      <span className="text-xs text-slate-500">{item.progress ?? progressForStatus(item.status)}%</span>
+                      <ProgressBar value={item.progress || progressForStatus(item.status)} bar="bg-brand" compact />
+                      <span className="text-xs text-slate-500">{item.progress || progressForStatus(item.status)}%</span>
                     </div>
                   </td>
                   <td className="px-3 py-3 text-slate-500">⏱ {elapsed(item, now)}</td>

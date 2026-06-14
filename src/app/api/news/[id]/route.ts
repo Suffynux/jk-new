@@ -67,16 +67,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   await item.save();
 
   if (logs.length) {
-    await Activity.insertMany(
-      logs.map((log) => ({
-        userEmail: session.user.email,
-        userName: session.user.name,
-        action: log.action,
-        srNumber: item.srNumber,
-        newsTitle: item.title,
-        detail: log.detail,
-      }))
-    );
+    // Activity logging must never block or revert a saved change.
+    try {
+      await Activity.insertMany(
+        logs.map((log) => ({
+          userEmail: session.user.email,
+          userName: session.user.name,
+          action: log.action,
+          srNumber: item.srNumber,
+          newsTitle: item.title,
+          detail: log.detail,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to write activity log", err);
+    }
   }
 
   return NextResponse.json(item);

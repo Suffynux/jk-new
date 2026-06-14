@@ -6,7 +6,7 @@ const ActivitySchema = new Schema(
     userName: { type: String, required: true },
     action: {
       type: String,
-      enum: ["created", "status_changed", "voiceover_changed", "updated", "deleted", "user_created", "user_deleted"],
+      enum: ["created", "status_changed", "completed", "voiceover_changed", "updated", "deleted", "user_created", "user_deleted"],
       required: true,
     },
     srNumber: { type: Number },
