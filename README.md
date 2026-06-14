@@ -19,12 +19,17 @@ JK News is a Jammu & Kashmir news channel serving **200,000+ followers** on Face
 - **5-stage production pipeline** – A Kanban board that follows a story through its real lifecycle: **In Progress → Voice Over → Video / Editing → On Air → Done**, with drag & drop on desktop and swipeable columns on mobile.
 - **Automatic time tracking** – A timer starts the moment a news item is created (In Progress) and stops when it is marked **Done**. The total turnaround time is calculated and stored, and live elapsed time is shown on every card until it is finished.
 - **Per-item progress** – Each news card shows a progress bar and percentage derived from its current stage, so you can see at a glance how far along every story is.
+- **Overdue alerts** – Any item that isn't *Done* after **1 hour** turns red on the board and in the list, with an "overdue" count in the header and per-day badges, so nothing slips.
+- **Daily report (PDF)** – One click exports a branded PDF of everything completed today (with start/finish times and turnaround), plus a summary and the items still in progress.
+- **Date-grouped list with pagination** – The list view groups records by day (newest first) and paginates by day, so a full year of records stays fast and easy to browse.
+- **Search & filters** – Instant search by news name or Sr #, plus a stage filter, applied across both Kanban and list views.
 - **Light & dark themes** – A white/light theme by default with a one-tap dark mode toggle in the navbar. Your choice is remembered and applied before the page paints (no flash).
 - **Mobile-first, responsive design** – The whole board is built to be used on phones first, then scales up to tablet and desktop.
 - **Brand identity** – Colors and logo taken straight from the JK News brand.
+- **Toast notifications** – Instant feedback on every create, move, delete, and report action.
 - **Secure authentication** – NextAuth-powered email/password login.
-- **Role-based access control** – Super admin capabilities for user management.
-- **Full audit trail** – Every change (status moves, completions, edits) is logged with the user and a timestamp.
+- **Role-based access control** – Super admin can manage users and clear the board (delete all news); confirmations run through an in-app modal.
+- **Full audit trail** – Every change (status moves, completions, edits, deletions) is logged with the user and a timestamp, on a server-paginated activity feed.
 
 ## Workflow & timing
 
@@ -46,6 +51,8 @@ The **clock starts** when an item is created (it enters *In Progress*) and **sto
 - **Backend:** Node.js, Next.js API Routes
 - **Database:** MongoDB (Mongoose ODM)
 - **Authentication:** NextAuth v4
+- **PDF reports:** jsPDF + jspdf-autotable (loaded on demand)
+- **Notifications:** react-hot-toast
 - **Deployment:** Optimized for Vercel
 
 ## Quick Start
