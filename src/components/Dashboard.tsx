@@ -3,6 +3,10 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+import Pagination from "@/components/Pagination";
+import { exportDailyReport } from "@/lib/dailyReport";
+
+const DAYS_PER_PAGE = 7;
 
 type Status = "in-progress" | "voice-over" | "video-editing" | "onair" | "done";
 
@@ -96,6 +100,9 @@ export default function Dashboard() {
   // Filters
   const [query, setQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<"all" | Status>("all");
+
+  // List-view pagination (by day)
+  const [listPage, setListPage] = useState(1);
 
   // Add form state
   const [newTitle, setNewTitle] = useState("");
@@ -258,6 +265,28 @@ export default function Dashboard() {
 
   const overdueCount = visibleItems.filter((i) => isOverdue(i, now)).length;
   const colSpan = isSuperAdmin ? 7 : 6;
+
+  // Paginate the day groups so a year of records stays manageable.
+  const totalListPages = Math.max(1, Math.ceil(groupedByDay.length / DAYS_PER_PAGE));
+  const safeListPage = Math.min(listPage, totalListPages);
+  const pagedGroups = groupedByDay.slice(
+    (safeListPage - 1) * DAYS_PER_PAGE,
+    safeListPage * DAYS_PER_PAGE
+  );
+
+  // Reset to the first page whenever the filtered set changes.
+  useEffect(() => {
+    setListPage(1);
+  }, [query, stageFilter]);
+
+  function handleDailyReport() {
+    const result = exportDailyReport(items);
+    if (result.count === 0) {
+      toast("No news completed today yet.", { icon: "📭" });
+    } else {
+      toast.success(`Exported daily report (${result.count} completed)`);
+    }
+  }
 
   return (
     <main className="mx-auto max-w-7xl px-3 py-5 sm:px-4 sm:py-6">

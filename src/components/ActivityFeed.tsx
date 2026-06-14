@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 type ActivityEntry = {
   _id: string;
@@ -24,22 +25,33 @@ const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
   user_deleted: { label: "User Removed", cls: "bg-rose-500/15 text-rose-400" },
 };
 
+const PAGE_SIZE = 20;
+
 export default function ActivityFeed() {
   const [entries, setEntries] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    fetch("/api/activity")
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setEntries)
+    setLoading(true);
+    fetch(`/api/activity?page=${page}&limit=${PAGE_SIZE}`)
+      .then((res) => (res.ok ? res.json() : { entries: [], totalPages: 1, total: 0 }))
+      .then((data) => {
+        setEntries(data.entries ?? []);
+        setTotalPages(data.totalPages ?? 1);
+        setTotal(data.total ?? 0);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
       <h1 className="mb-1 text-xl font-bold">Activity Log</h1>
       <p className="mb-6 text-sm text-slate-500">
         Every change — who did it and when. Newest first.
+        {total > 0 && <> · {total} total</>}
       </p>
 
       {loading ? (
@@ -72,6 +84,8 @@ export default function ActivityFeed() {
           })}
         </div>
       )}
+
+      {!loading && <Pagination page={page} totalPages={totalPages} onChange={setPage} />}
     </main>
   );
 }
