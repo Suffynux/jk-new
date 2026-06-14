@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { dbConnect } from "@/lib/db";
-import { NewsItem, NEWS_STATUSES } from "@/models/NewsItem";
+import { NewsItem, NEWS_STATUSES, progressForStatus } from "@/models/NewsItem";
 import { Activity } from "@/models/Activity";
 
 export async function GET() {
@@ -20,17 +20,14 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  // start time and end time should be start when the news is created and completed when the news is marked as done. This will help us to calculate the time taken to complete the news.
-
-  const newStartedAt = body.status === "done" ? new Date() : undefined;
-  const newsCompletedAt = body.status === "done" ? new Date() : undefined;
-
-  
-
   const title = (body.title ?? "").trim();
   if (!title) return NextResponse.json({ error: "News name is required" }, { status: 400 });
 
-  const status = NEWS_STATUSES.includes(body.status) ? body.status : "pending";
+  // News enters the pipeline at "in-progress" and the clock starts now.
+  // It only stops (durationMs is recorded) when the item is marked "done".
+  const status = NEWS_STATUSES.includes(body.status) ? body.status : "in-progress";
+  const now = new Date();
+  const completedAt = status === "done" ? now : undefined;
 
   await dbConnect();
 
@@ -46,9 +43,12 @@ export async function POST(req: Request) {
   const item = await NewsItem.create({
     srNumber,
     title,
-    voiceOver: Boolean(body.voiceOver),
     status,
     createdBy: session.user.email,
+    progress: progressForStatus(status),
+    startedAt: now,
+    completedAt,
+    durationMs: completedAt ? completedAt.getTime() - now.getTime() : undefined,
   });
 
   await Activity.create({

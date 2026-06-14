@@ -2,14 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { dbConnect } from "@/lib/db";
-import { NewsItem, NEWS_STATUSES } from "@/models/NewsItem";
+import { NewsItem, NEWS_STATUSES, STATUS_LABELS, progressForStatus } from "@/models/NewsItem";
 import { Activity } from "@/models/Activity";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  "in-progress": "In Progress",
-  done: "Done",
-};
+function formatDuration(ms: number): string {
+  const totalMinutes = Math.max(0, Math.round(ms / 60000));
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -30,17 +33,27 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
     logs.push({
       action: "status_changed",
-      detail: `Moved "${item.title}" from ${STATUS_LABELS[item.status]} to ${STATUS_LABELS[body.status]}`,
+      detail: `Moved "${item.title}" from ${STATUS_LABELS[item.status as keyof typeof STATUS_LABELS]} to ${STATUS_LABELS[body.status as keyof typeof STATUS_LABELS]}`,
     });
     item.status = body.status;
-  }
+    item.progress = progressForStatus(body.status);
 
-  if (body.voiceOver !== undefined && Boolean(body.voiceOver) !== item.voiceOver) {
-    item.voiceOver = Boolean(body.voiceOver);
-    logs.push({
-      action: "voiceover_changed",
-      detail: `Marked voice over as ${item.voiceOver ? "filled" : "not filled"} for "${item.title}"`,
-    });
+    // Make sure the clock has a start (older records may predate this field).
+    if (!item.startedAt) item.startedAt = item.createdAt ?? new Date();
+
+    if (body.status === "done") {
+      const completedAt = new Date();
+      item.completedAt = completedAt;
+      item.durationMs = completedAt.getTime() - new Date(item.startedAt).getTime();
+      logs.push({
+        action: "completed",
+        detail: `"${item.title}" went On Air → Done in ${formatDuration(item.durationMs)}`,
+      });
+    } else {
+      // Re-opened: stop counting the previous run; it will be recomputed on Done.
+      item.completedAt = undefined;
+      item.durationMs = undefined;
+    }
   }
 
   if (body.title !== undefined && body.title.trim() && body.title.trim() !== item.title) {

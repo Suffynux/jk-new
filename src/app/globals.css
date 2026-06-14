@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+/* Class-based dark mode: theme is controlled by `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* The whole UI is written in slate-* utilities. Instead of rewriting every
+     component, the slate ramp is wired to runtime CSS variables (--c-*) that
+     flip between a light (default) and dark palette below. */
+  --color-slate-50: var(--c-50);
+  --color-slate-100: var(--c-100);
+  --color-slate-200: var(--c-200);
+  --color-slate-300: var(--c-300);
+  --color-slate-400: var(--c-400);
+  --color-slate-500: var(--c-500);
+  --color-slate-600: var(--c-600);
+  --color-slate-700: var(--c-700);
+  --color-slate-800: var(--c-800);
+  --color-slate-900: var(--c-900);
+  --color-slate-950: var(--c-950);
+
+  /* Brand palette pulled from the JK News logo. */
+  --color-brand: #c01722; /* red plate */
+  --color-brand-dark: #9c0f1a;
+  --color-gold: #f2a51c; /* "JK" letters */
+  --color-ink: #14387f; /* "NEWS" banner blue */
+}
+
+/* Light theme (default) — the slate ramp inverted so dark utilities read light. */
+:root {
+  color-scheme: light;
+  --c-50: #020617;
+  --c-100: #0f172a;
+  --c-200: #1e293b;
+  --c-300: #334155;
+  --c-400: #475569;
+  --c-500: #64748b;
+  --c-600: #94a3b8;
+  --c-700: #cbd5e1;
+  --c-800: #e2e8f0;
+  --c-900: #f1f5f9;
+  --c-950: #f8fafc;
+}
+
+/* Dark theme — the original slate ramp. */
+.dark {
+  color-scheme: dark;
+  --c-50: #f8fafc;
+  --c-100: #f1f5f9;
+  --c-200: #e2e8f0;
+  --c-300: #cbd5e1;
+  --c-400: #94a3b8;
+  --c-500: #64748b;
+  --c-600: #475569;
+  --c-700: #334155;
+  --c-800: #1e293b;
+  --c-900: #0f172a;
+  --c-950: #020617;
+}
+
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
