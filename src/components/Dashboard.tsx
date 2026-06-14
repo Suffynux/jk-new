@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 
 type Status = "in-progress" | "voice-over" | "video-editing" | "onair" | "done";
 
@@ -28,6 +29,7 @@ const COLUMNS = [
 ] as const;
 
 const ORDER = COLUMNS.map((c) => c.key) as Status[];
+const LABELS = Object.fromEntries(COLUMNS.map((c) => [c.key, c.label])) as Record<Status, string>;
 const OVERDUE_MS = 60 * 60 * 1000; // 1 hour
 
 /** Map any value (incl. legacy "pending") to a valid stage so nothing breaks. */
@@ -130,9 +132,12 @@ export default function Dashboard() {
     if (res.ok) {
       const updated = await res.json();
       setItems((prev) => prev.map((it) => (it._id === id ? { ...it, ...updated } : it)));
+      if (typeof body.status === "string") {
+        toast.success(`Moved to ${LABELS[normalizeStatus(body.status)]}`);
+      }
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to update");
+      toast.error(data.error || "Failed to update");
       load();
     }
   }
@@ -143,28 +148,30 @@ export default function Dashboard() {
     if (!confirm("Are you absolutely sure? Every record on the board will be permanently removed.")) return;
     const res = await fetch("/api/news", { method: "DELETE" });
     if (res.ok) {
-      setItems([]);
+      const data = await res.json().catch(() => ({}));
+      toast.success(`Deleted all ${data.deletedCount ?? ""} records`.replace("  ", " "));
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to delete all");
+      toast.error(data.error || "Failed to delete all");
     }
+    load(); // refresh from the server
   }
 
   async function deleteItem(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setItems((prev) => prev.filter((it) => it._id !== id));
+      toast.success(`Deleted "${title}"`);
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to delete");
+      toast.error(data.error || "Failed to delete");
     }
+    load(); // refresh from the server
   }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setError("");
     const res = await fetch("/api/news", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -175,10 +182,11 @@ export default function Dashboard() {
       setShowModal(false);
       setNewTitle("");
       setNewSr("");
+      toast.success("News created");
       load();
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to create");
+      toast.error(data.error || "Failed to create");
     }
   }
 
