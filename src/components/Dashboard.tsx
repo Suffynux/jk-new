@@ -584,6 +584,45 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* ───────────── Confirm (delete) modal ───────────── */}
+      {confirmState && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+          onClick={() => !confirming && setConfirmState(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl border border-slate-200 bg-slate-900 p-6 shadow-2xl dark:border-slate-800 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-lg">
+                ⚠️
+              </span>
+              <h2 className="text-lg font-bold">{confirmState.title}</h2>
+            </div>
+            <p className="text-sm text-slate-500">{confirmState.message}</p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={confirming}
+                onClick={() => setConfirmState(null)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-500 hover:bg-slate-800 disabled:opacity-50 dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={confirming}
+                onClick={runConfirm}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50"
+              >
+                {confirming ? "Deleting…" : confirmState.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
