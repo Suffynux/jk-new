@@ -316,6 +316,14 @@ export default function Dashboard() {
             ))}
           </div>
           <button
+            onClick={handleDailyReport}
+            title="Export today's report as PDF"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:border-brand hover:text-brand dark:border-slate-700"
+          >
+            <span className="hidden sm:inline">📄 Daily Report</span>
+            <span className="sm:hidden">📄</span>
+          </button>
+          <button
             onClick={() => {
               setShowModal(true);
               setError("");
@@ -468,7 +476,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {groupedByDay.map((group) => {
+              {pagedGroups.map((group) => {
                 const dayOverdue = group.items.filter((i) => isOverdue(i, now)).length;
                 return (
                   <Fragment key={group.key}>
@@ -552,6 +560,11 @@ export default function Dashboard() {
               )}
             </tbody>
           </table>
+          {groupedByDay.length > 0 && (
+            <div className="px-3 pb-3">
+              <Pagination page={safeListPage} totalPages={totalListPages} onChange={setListPage} unit="page" />
+            </div>
+          )}
         </div>
       )}
 
