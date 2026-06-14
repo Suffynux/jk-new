@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -28,11 +29,17 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">
-            <span className="text-red-500">JK</span>-News Records
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">Sign in to manage your news workflow</p>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Image
+            src="/jk_news_logo_component_rectangular.png"
+            alt="JK News"
+            width={96}
+            height={96}
+            priority
+            className="mb-3 h-16 w-auto"
+          />
+          <h1 className="text-2xl font-bold tracking-tight">News Records</h1>
+          <p className="mt-2 text-sm text-slate-500">Sign in to manage your news workflow</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -43,7 +50,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-red-500"
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-brand"
               placeholder="you@example.com"
             />
           </div>
@@ -54,7 +61,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-red-500"
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-brand"
               placeholder="••••••••"
             />
           </div>
@@ -64,7 +71,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-red-600 py-2.5 text-sm font-semibold transition hover:bg-red-500 disabled:opacity-50"
+            className="w-full rounded-lg bg-brand py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>

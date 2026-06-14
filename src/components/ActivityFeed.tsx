@@ -16,6 +16,7 @@ type ActivityEntry = {
 const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
   created: { label: "Created", cls: "bg-emerald-500/15 text-emerald-400" },
   status_changed: { label: "Status", cls: "bg-sky-500/15 text-sky-400" },
+  completed: { label: "Completed", cls: "bg-emerald-500/15 text-emerald-400" },
   voiceover_changed: { label: "Voice Over", cls: "bg-purple-500/15 text-purple-400" },
   updated: { label: "Updated", cls: "bg-amber-500/15 text-amber-400" },
   deleted: { label: "Deleted", cls: "bg-red-500/15 text-red-400" },
