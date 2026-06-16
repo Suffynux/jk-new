@@ -31,9 +31,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8 flex flex-col items-center text-center">
           <Image
-            src="/updatedLogo.png"
+            src="/updatedFixedLogo.png"
             alt="JK News"
-            width={200}
+            width={80}
             height={80}
             priority
             className="mb-3 h-20 w-auto"
