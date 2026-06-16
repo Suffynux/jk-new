@@ -38,7 +38,11 @@ export default function LoginPage() {
             priority
             className="mb-3 h-20 w-auto"
           />
-          <h1 className="text-2xl font-bold tracking-tight">News Records</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            <span className="text-brand">News</span>{" "}
+            <span className="text-gold">Records</span>
+          </h1>
+          <div className="mt-2 h-1 w-16 rounded-full bg-gold" />
           <p className="mt-2 text-sm text-slate-500">Sign in to manage your news workflow</p>
         </div>
 

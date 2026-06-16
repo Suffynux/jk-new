@@ -30,7 +30,8 @@ export default function Navbar() {
               className="h-9 w-auto sm:h-10"
             />
             <span className="hidden text-base font-bold tracking-tight sm:inline">
-              News Records
+              <span className="text-brand">News</span>{" "}
+              <span className="text-gold">Records</span>
             </span>
           </Link>
 
