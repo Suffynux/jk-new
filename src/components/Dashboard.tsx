@@ -166,27 +166,6 @@ export default function Dashboard() {
     }
   }
 
-  function deleteAll() {
-    if (!items.length) return;
-    setConfirmState({
-      title: "Delete all news",
-      message: `This will permanently delete all ${items.length} news record${items.length === 1 ? "" : "s"} on the board. This cannot be undone.`,
-      confirmLabel: "Delete all",
-      onConfirm: performDeleteAll,
-    });
-  }
-
-  async function performDeleteAll() {
-    const res = await fetch("/api/news", { method: "DELETE" });
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      toast.success(`Deleted all ${data.deletedCount ?? ""} records`.replace("  ", " "));
-    } else {
-      const data = await res.json().catch(() => ({}));
-      toast.error(data.error || "Failed to delete all");
-    }
-    load(); // refresh from the server
-  }
 
   function deleteItem(id: string, title: string) {
     setConfirmState({
@@ -336,16 +315,7 @@ export default function Dashboard() {
           >
             + Add News
           </button>
-          {isSuperAdmin && items.length > 0 && (
-            <button
-              onClick={deleteAll}
-              title="Delete all news records"
-              className="rounded-lg border border-red-500/50 px-3 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500/10"
-            >
-              <span className="hidden sm:inline">Delete all</span>
-              <span className="sm:hidden">🗑</span>
-            </button>
-          )}
+
         </div>
       </div>
 
