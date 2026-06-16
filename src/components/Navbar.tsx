@@ -22,10 +22,10 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-2 py-2.5">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <Image
-              src="/jk_news_logo_component_rectangular.png"
+              src="/updatedLogo.png"
               alt="JK News"
-              width={44}
-              height={44}
+              width={120}
+              height={48}
               priority
               className="h-9 w-auto sm:h-10"
             />

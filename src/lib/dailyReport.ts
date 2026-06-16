@@ -9,7 +9,7 @@ type ReportItem = {
   durationMs?: number;
 };
 
-const BRAND: [number, number, number] = [192, 23, 34]; // #c01722
+const BRAND: [number, number, number] = [21, 101, 216]; // #1565d8 logo blue
 
 function isSameDay(iso: string | undefined, ref: Date): boolean {
   if (!iso) return false;

@@ -31,12 +31,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8 flex flex-col items-center text-center">
           <Image
-            src="/jk_news_logo_component_rectangular.png"
+            src="/updatedLogo.png"
             alt="JK News"
-            width={96}
-            height={96}
+            width={200}
+            height={80}
             priority
-            className="mb-3 h-16 w-auto"
+            className="mb-3 h-20 w-auto"
           />
           <h1 className="text-2xl font-bold tracking-tight">News Records</h1>
           <p className="mt-2 text-sm text-slate-500">Sign in to manage your news workflow</p>

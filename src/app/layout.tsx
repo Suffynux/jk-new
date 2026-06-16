@@ -8,7 +8,7 @@ const geist = Geist({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "JK News Records",
   description: "News production workflow tracker built for JK News.",
-  icons: { icon: "/jk_news_logo_component_rectangular.png" },
+  icons: { icon: "/updatedLogo.png" },
 };
 
 // Applies the saved theme before first paint so there is no light/dark flash.

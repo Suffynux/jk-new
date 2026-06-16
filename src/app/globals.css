@@ -19,11 +19,12 @@
   --color-slate-900: var(--c-900);
   --color-slate-950: var(--c-950);
 
-  /* Brand palette pulled from the JK News logo. */
-  --color-brand: #c01722; /* red plate */
-  --color-brand-dark: #9c0f1a;
-  --color-gold: #f2a51c; /* "JK" letters */
-  --color-ink: #14387f; /* "NEWS" banner blue */
+  /* Brand palette pulled from the JK News logo (blue + yellow). */
+  --color-brand: #1565d8; /* logo blue ("K" + "NEWS") */
+  --color-brand-dark: #0f4aad;
+  --color-gold: #f5a623; /* logo yellow/orange ("J") */
+  --color-gold-dark: #d98a0b;
+  --color-ink: #0f3a8c; /* deep banner blue */
 }
 
 /* Light theme (default) — the slate ramp inverted so dark utilities read light. */
