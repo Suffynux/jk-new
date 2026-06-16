@@ -50,7 +50,7 @@ export default function ActivityFeed() {
     <main className="mx-auto max-w-4xl px-4 py-6">
       <h1 className="mb-1 text-xl font-bold">Activity Log</h1>
       <p className="mb-6 text-sm text-slate-500">
-        Every change — who did it and when. Newest first.
+        Every change  who did it and when. Newest first.
         {total > 0 && <> · {total} total</>}
       </p>
 

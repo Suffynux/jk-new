@@ -53,6 +53,11 @@ function isOverdue(item: NewsItem, now: number): boolean {
   return now - start > OVERDUE_MS;
 }
 
+/** Local YYYY-MM-DD (for <input type="date"> values, avoiding UTC drift). */
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 /** Stable key (for sorting/grouping) and a human label for an item's day. */
 function dayKey(iso: string): string {
   return new Date(iso).toISOString().slice(0, 10); // YYYY-MM-DD
@@ -103,6 +108,12 @@ export default function Dashboard() {
 
   // List-view pagination (by day)
   const [listPage, setListPage] = useState(1);
+
+  // Daily report (custom date picker)
+  const todayStr = localDateStr(new Date());
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportDate, setReportDate] = useState(todayStr);
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   // Add form state
   const [newTitle, setNewTitle] = useState("");
@@ -229,7 +240,8 @@ export default function Dashboard() {
     });
   }, [items, query, stageFilter]);
 
-  // List view: group by creation day, newest day first.
+  // List view: group by creation day, newest day first. Within each day the
+  // items run in creation order so the first news of the day is #1, then #2…
   const groupedByDay = useMemo(() => {
     const map = new Map<string, { label: string; items: NewsItem[] }>();
     for (const it of visibleItems) {
@@ -239,7 +251,13 @@ export default function Dashboard() {
     }
     return [...map.entries()]
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, g]) => ({ key, ...g }));
+      .map(([key, g]) => ({
+        key,
+        label: g.label,
+        items: [...g.items].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        ),
+      }));
   }, [visibleItems]);
 
   const overdueCount = visibleItems.filter((i) => isOverdue(i, now)).length;
@@ -258,16 +276,29 @@ export default function Dashboard() {
     setListPage(1);
   }, [query, stageFilter]);
 
+  function openReportModal() {
+    setReportDate(todayStr);
+    setShowReportModal(true);
+  }
+
   async function handleDailyReport() {
+    // Parse the YYYY-MM-DD as a local date (midnight local time).
+    const [y, m, d] = reportDate.split("-").map(Number);
+    const target = new Date(y, m - 1, d);
+    setGeneratingReport(true);
     try {
-      const result = await exportDailyReport(items);
+      const result = await exportDailyReport(items, target);
+      setShowReportModal(false);
+      const label = target.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
       if (result.count === 0) {
-        toast("No news completed today yet — exported an empty report.", { icon: "📭" });
+        toast(`No news completed on ${label} — exported an empty report.`, { icon: "📭" });
       } else {
-        toast.success(`Exported daily report (${result.count} completed)`);
+        toast.success(`Exported report for ${label} (${result.count} completed)`);
       }
     } catch {
       toast.error("Failed to generate report");
+    } finally {
+      setGeneratingReport(false);
     }
   }
 
@@ -299,8 +330,8 @@ export default function Dashboard() {
             ))}
           </div>
           <button
-            onClick={handleDailyReport}
-            title="Export today's report as PDF"
+            onClick={openReportModal}
+            title="Export a daily report as PDF — pick any date"
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:border-brand hover:text-brand dark:border-slate-700"
           >
             <span className="hidden sm:inline">📄 Daily Report</span>
@@ -471,7 +502,7 @@ export default function Dashboard() {
                         </div>
                       </td>
                     </tr>
-                    {group.items.map((item) => {
+                    {group.items.map((item, idx) => {
                       const overdue = isOverdue(item, now);
                       return (
                         <tr
@@ -482,8 +513,11 @@ export default function Dashboard() {
                               : "bg-slate-950 hover:bg-slate-900/50"
                           }`}
                         >
-                          <td className={`px-3 py-3 font-bold ${overdue ? "text-red-500" : "text-slate-500"}`}>
-                            #{item.srNumber}
+                          <td
+                            className={`px-3 py-3 font-bold ${overdue ? "text-red-500" : "text-slate-500"}`}
+                            title={`Board Sr #${item.srNumber}`}
+                          >
+                            #{idx + 1}
                           </td>
                           <td className="px-3 py-3 font-medium">{item.title}</td>
                           <td className="px-3 py-3">
@@ -539,6 +573,66 @@ export default function Dashboard() {
               <Pagination page={safeListPage} totalPages={totalListPages} onChange={setListPage} unit="page" />
             </div>
           )}
+        </div>
+      )}
+
+      {/* ───────────── Daily report (date picker) modal ───────────── */}
+      {showReportModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+          onClick={() => !generatingReport && setShowReportModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl border border-slate-200 bg-slate-900 p-6 shadow-2xl dark:border-slate-800 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-1 text-lg font-bold">Daily Report</h2>
+            <p className="mb-4 text-sm text-slate-500">
+              Pick a date to export that day&apos;s completed news as a PDF. Defaults to today.
+            </p>
+            <label className="mb-1 block text-sm font-medium text-slate-400">Report date</label>
+            <input
+              type="date"
+              value={reportDate}
+              max={todayStr}
+              onChange={(e) => setReportDate(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-brand dark:border-slate-700"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setReportDate(todayStr)}
+                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-500 transition hover:border-brand hover:text-brand dark:border-slate-700"
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                onClick={() => setReportDate(localDateStr(new Date(Date.now() - 86400000)))}
+                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-500 transition hover:border-brand hover:text-brand dark:border-slate-700"
+              >
+                Yesterday
+              </button>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={generatingReport}
+                onClick={() => setShowReportModal(false)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-500 hover:bg-slate-800 disabled:opacity-50 dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={generatingReport || !reportDate}
+                onClick={handleDailyReport}
+                className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
+              >
+                {generatingReport ? "Generating…" : "Export PDF"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

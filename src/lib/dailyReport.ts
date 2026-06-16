@@ -36,26 +36,29 @@ function time(iso?: string): string {
 }
 
 /**
- * Builds and downloads a PDF of the news completed today.
- * Returns how many completed items were included.
+
+* Builds and downloads a PDF of the news completed on the given day
+ * (defaults to today). Returns how many completed items were included.
  */
-export async function exportDailyReport(items: ReportItem[]): Promise<{ count: number }> {
+export async function exportDailyReport(
+  items: ReportItem[],
+  targetDate: Date = new Date()
+): Promise<{ count: number }> {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([
     import("jspdf"),
     import("jspdf-autotable"),
   ]);
 
-  const today = new Date();
   const completedToday = items
-    .filter((i) => i.status === "done" && isSameDay(i.completedAt, today))
+    .filter((i) => i.status === "done" && isSameDay(i.completedAt, targetDate))
     .sort((a, b) => a.srNumber - b.srNumber);
 
-  const createdToday = items.filter((i) => isSameDay(i.createdAt, today));
+  const createdToday = items.filter((i) => isSameDay(i.createdAt, targetDate));
   const stillOpen = createdToday.filter((i) => i.status !== "done");
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const dateLabel = today.toLocaleDateString(undefined, {
+  const dateLabel = targetDate.toLocaleDateString(undefined, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -68,7 +71,7 @@ export async function exportDailyReport(items: ReportItem[]): Promise<{ count: n
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
-  doc.text("JK News — Daily Report", 40, 38);
+  doc.text("JK News  Daily Report", 40, 38);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.text(dateLabel, 40, 56);
@@ -114,7 +117,7 @@ export async function exportDailyReport(items: ReportItem[]): Promise<{ count: n
     });
   }
 
-  const stamp = today.toISOString().slice(0, 10);
+  const stamp = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
   doc.save(`JK-News-Daily-Report-${stamp}.pdf`);
 
   return { count: completedToday.length };
