@@ -70,6 +70,7 @@ export async function POST(req: Request) {
     title,
     status,
     createdBy: session.user.email,
+    createdByName: session.user.name,
     progress: progressForStatus(status),
     startedAt: now,
     completedAt,

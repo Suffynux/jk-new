@@ -3,6 +3,7 @@ type ReportItem = {
   title: string;
   status: string;
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
@@ -85,12 +86,12 @@ export async function exportDailyReport(
   // Completed-today table
   autoTable(doc, {
     startY: 120,
-    head: [["Sr #", "News", "By", "Started", "Completed", "Turnaround"]],
+    head: [["Sr #", "News", "Name", "Started", "Completed", "Turnaround"]],
     body: completedToday.length
       ? completedToday.map((i, idx) => [
           `#${idx + 1}`,
           i.title,
-          i.createdBy,
+          i.createdByName || i.createdBy,
           time(i.startedAt),
           time(i.completedAt),
           formatDuration(i.durationMs),
@@ -109,8 +110,8 @@ export async function exportDailyReport(
     doc.text("Still in progress (created today)", 40, y + 28);
     autoTable(doc, {
       startY: y + 38,
-      head: [["Sr #", "News", "By", "Stage"]],
-      body: stillOpen.map((i, idx) => [`#${idx + 1}`, i.title, i.createdBy, i.status]),
+      head: [["Sr #", "News", "Name", "Stage"]],
+      body: stillOpen.map((i, idx) => [`#${idx + 1}`, i.title, i.createdByName || i.createdBy, i.status]),
       headStyles: { fillColor: [51, 65, 85], textColor: 255 },
       styles: { fontSize: 10, cellPadding: 6 },
       alternateRowStyles: { fillColor: [245, 245, 248] },

@@ -31,6 +31,7 @@ const NewsItemSchema = new Schema(
     title: { type: String, required: true, trim: true },
     status: { type: String, enum: NEWS_STATUSES, default: "in-progress" },
     createdBy: { type: String, required: true },
+    createdByName: { type: String },
     progress: { type: Number, default: progressForStatus("in-progress") },
     // Timing: the clock starts when the news enters the pipeline (creation)
     // and stops the moment it is marked "done".

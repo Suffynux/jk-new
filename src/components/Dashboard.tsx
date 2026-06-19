@@ -17,6 +17,7 @@ type NewsItem = {
   status: Status;
   progress: number;
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
   updatedAt: string;
   startedAt?: string;
