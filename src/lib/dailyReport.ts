@@ -87,8 +87,8 @@ export async function exportDailyReport(
     startY: 120,
     head: [["Sr #", "News", "By", "Started", "Completed", "Turnaround"]],
     body: completedToday.length
-      ? completedToday.map((i) => [
-          `#${i.srNumber}`,
+      ? completedToday.map((i, idx) => [
+          `#${idx + 1}`,
           i.title,
           i.createdBy,
           time(i.startedAt),
@@ -110,7 +110,7 @@ export async function exportDailyReport(
     autoTable(doc, {
       startY: y + 38,
       head: [["Sr #", "News", "By", "Stage"]],
-      body: stillOpen.map((i) => [`#${i.srNumber}`, i.title, i.createdBy, i.status]),
+      body: stillOpen.map((i, idx) => [`#${idx + 1}`, i.title, i.createdBy, i.status]),
       headStyles: { fillColor: [51, 65, 85], textColor: 255 },
       styles: { fontSize: 10, cellPadding: 6 },
       alternateRowStyles: { fillColor: [245, 245, 248] },
